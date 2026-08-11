@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+
+# secrets — never commit real credentials (keep the example)
+.env
+.env.*
+!.env.example
+
+# python / agent
+__pycache__/
+*.pyc
+.venv/
+agent/.venv/
+.bedrock_agentcore.yaml
+
+# build / logs / os
+*.log
+build.log
+.DS_Store

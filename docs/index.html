@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>APS Digital Twin on AWS — Architecture</title>
+<style>
+  :root{--aws:#ff9900;--bg:#0d1117;--panel:#161b22;--line:#30363d;--text:#e6edf3;--muted:#8b949e}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+  .wrap{max-width:1060px;margin:0 auto;padding:40px 24px 60px}
+  header{border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:28px}
+  .eyebrow{color:var(--aws);font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase}
+  h1{font-size:32px;margin:6px 0 8px}
+  .sub{color:var(--muted);font-size:17px;max-width:760px}
+  h2{font-size:20px;margin:34px 0 12px;border-left:3px solid var(--aws);padding-left:10px}
+  p{color:#c9d1d9;margin-bottom:12px}
+  .diagram{background:#0b1017;border:1px solid var(--line);border-radius:12px;padding:16px;margin:10px 0 8px}
+  .diagram svg{width:100%;height:auto;display:block}
+  .cap{color:var(--muted);font-size:13px;margin-bottom:20px}
+  ol,ul{margin:0 0 14px 22px;color:#c9d1d9}
+  li{margin-bottom:7px}
+  code{background:#161b22;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:13px;color:#ffd9a6}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:6px 0 8px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .card h3{font-size:15px;margin-bottom:6px;color:#fff}
+  .card p{font-size:14px;color:var(--muted);margin:0}
+  footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:13px}
+  a{color:var(--aws)}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Autodesk University 2026 · Reference Architecture</div>
+    <h1>APS Digital Twin on AWS</h1>
+    <p class="sub">A plant-floor digital twin: live IoT telemetry overlaid on an Autodesk Platform Services
+    model, stored in <b>Amazon Timestream for InfluxDB</b>, and queried in natural language by an
+    <b>Amazon Bedrock AgentCore</b> agent.</p>
+  </header>
+
+  <h2>Architecture</h2>
+  <div class="diagram">
+    <!-- AWS-style swimlane reference architecture -->
+    <svg viewBox="0 0 1000 910" role="img" aria-label="APS digital twin on AWS architecture diagram">
+      <defs>
+        <marker id="arw" markerWidth="10" markerHeight="10" refX="7" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 z" fill="#ff9900"/>
+        </marker>
+        <style>
+          .tname{fill:#fff;font:700 13px 'Segoe UI',sans-serif}
+          .tsub{fill:#8b949e;font:10px 'Segoe UI',sans-serif}
+          .band-t{fill:#ff9900;font:700 12px 'Segoe UI',sans-serif;letter-spacing:.5px}
+          .cloud-t{fill:#8b949e;font:700 12px 'Segoe UI',sans-serif;letter-spacing:1px}
+          .flow{fill:#8b949e;font:italic 11px 'Segoe UI',sans-serif}
+          .band{fill:#0f1622;stroke:#1e2833}
+          .tile{fill:#1c2634;stroke:#2a3646}
+        </style>
+      </defs>
+
+      <!-- AWS Cloud boundary (wraps ingest..present) -->
+      <rect x="34" y="150" width="932" height="742" rx="14" fill="none" stroke="#3a4a60" stroke-dasharray="7 6"/>
+      <text x="52" y="172" class="cloud-t">AWS CLOUD · us-east-1</text>
+
+      <!-- ===== Band 1: EDGE ===== -->
+      <rect x="60" y="58" width="880" height="78" rx="10" class="band"/>
+      <text x="76" y="82" class="band-t">PLANT FLOOR · EDGE</text>
+      <g transform="translate(400,74)">
+        <rect width="220" height="50" rx="9" class="tile"/><rect width="220" height="6" rx="3" fill="#5a6b80"/>
+        <text x="110" y="27" text-anchor="middle" class="tname">Sensors / PLCs</text>
+        <text x="110" y="42" text-anchor="middle" class="tsub">Telegraf agents · line protocol</text>
+      </g>
+
+      <!-- ===== Band 2: INGEST ===== -->
+      <rect x="60" y="196" width="880" height="86" rx="10" class="band"/>
+      <text x="76" y="218" class="band-t">INGEST · AWS IoT</text>
+      <g transform="translate(300,228)">
+        <rect width="180" height="48" rx="9" class="tile"/><rect width="180" height="6" rx="3" fill="#7AA116"/>
+        <text x="90" y="26" text-anchor="middle" class="tname">AWS IoT Core</text>
+        <text x="90" y="41" text-anchor="middle" class="tsub">MQTT ingestion</text>
+      </g>
+      <g transform="translate(520,228)">
+        <rect width="180" height="48" rx="9" class="tile"/><rect width="180" height="6" rx="3" fill="#7AA116"/>
+        <text x="90" y="26" text-anchor="middle" class="tname">IoT Rule</text>
+        <text x="90" y="41" text-anchor="middle" class="tsub">route → Lambda</text>
+      </g>
+
+      <!-- ===== Band 3: STORE ===== -->
+      <rect x="60" y="322" width="880" height="118" rx="10" class="band"/>
+      <text x="76" y="344" class="band-t">STORE · TIME SERIES</text>
+      <rect x="286" y="352" width="470" height="78" rx="9" fill="none" stroke="#8C4FFF" stroke-dasharray="5 5"/>
+      <text x="298" y="367" class="cloud-t" style="fill:#b48cff">AMAZON VPC · MULTI-AZ</text>
+      <g transform="translate(300,374)">
+        <rect width="180" height="48" rx="9" class="tile"/><rect width="180" height="6" rx="3" fill="#ED7100"/>
+        <text x="90" y="26" text-anchor="middle" class="tname">AWS Lambda</text>
+        <text x="90" y="41" text-anchor="middle" class="tsub">line-protocol writer</text>
+      </g>
+      <g transform="translate(510,368)">
+        <rect width="230" height="56" rx="9" class="tile"/><rect width="230" height="6" rx="3" fill="#C925D1"/>
+        <text x="115" y="28" text-anchor="middle" class="tname">Amazon Timestream for InfluxDB</text>
+        <text x="115" y="45" text-anchor="middle" class="tsub">db.influx · port 8086 · Flux / InfluxQL</text>
+      </g>
+
+      <!-- ===== Band 4: SERVE ===== -->
+      <rect x="60" y="480" width="880" height="86" rx="10" class="band"/>
+      <text x="76" y="502" class="band-t">SERVE · QUERY API</text>
+      <g transform="translate(300,512)">
+        <rect width="180" height="48" rx="9" class="tile"/><rect width="180" height="6" rx="3" fill="#ED7100"/>
+        <text x="90" y="26" text-anchor="middle" class="tname">AWS Lambda</text>
+        <text x="90" y="41" text-anchor="middle" class="tsub">Flux query</text>
+      </g>
+      <g transform="translate(520,512)">
+        <rect width="180" height="48" rx="9" class="tile"/><rect width="180" height="6" rx="3" fill="#E7157B"/>
+        <text x="90" y="26" text-anchor="middle" class="tname">Amazon API Gateway</text>
+        <text x="90" y="41" text-anchor="middle" class="tsub">REST</text>
+      </g>
+
+      <!-- ===== Band 5: INTELLIGENCE ===== -->
+      <rect x="60" y="606" width="880" height="86" rx="10" class="band"/>
+      <text x="76" y="628" class="band-t">INTELLIGENCE · GEN AI</text>
+      <g transform="translate(300,638)">
+        <rect width="180" height="48" rx="9" class="tile"/><rect width="180" height="6" rx="3" fill="#01A88D"/>
+        <text x="90" y="26" text-anchor="middle" class="tname">Bedrock AgentCore</text>
+        <text x="90" y="41" text-anchor="middle" class="tsub">agent runtime + tools</text>
+      </g>
+      <g transform="translate(520,638)">
+        <rect width="180" height="48" rx="9" class="tile"/><rect width="180" height="6" rx="3" fill="#01A88D"/>
+        <text x="90" y="26" text-anchor="middle" class="tname">Amazon Bedrock</text>
+        <text x="90" y="41" text-anchor="middle" class="tsub">Claude (reasoning)</text>
+      </g>
+
+      <!-- ===== Band 6: PRESENT ===== -->
+      <rect x="60" y="732" width="880" height="140" rx="10" class="band"/>
+      <text x="76" y="754" class="band-t">PRESENT · APS ON AWS</text>
+      <g transform="translate(96,764)">
+        <rect width="180" height="44" rx="9" class="tile"/><rect width="180" height="6" rx="3" fill="#8C4FFF"/>
+        <text x="90" y="30" text-anchor="middle" class="tname">CloudFront + S3</text>
+      </g>
+      <g transform="translate(292,764)">
+        <rect width="170" height="44" rx="9" class="tile"/><rect width="170" height="6" rx="3" fill="#DD344C"/>
+        <text x="85" y="30" text-anchor="middle" class="tname">Amazon Cognito</text>
+      </g>
+      <g transform="translate(478,764)">
+        <rect width="200" height="44" rx="9" class="tile"/><rect width="200" height="6" rx="3" fill="#ff9900"/>
+        <text x="100" y="30" text-anchor="middle" class="tname">Autodesk APS APIs</text>
+      </g>
+      <g transform="translate(694,764)">
+        <rect width="170" height="44" rx="9" class="tile"/><rect width="170" height="6" rx="3" fill="#5a6b80"/>
+        <text x="85" y="30" text-anchor="middle" class="tname">APS Model Derivative</text>
+      </g>
+      <g transform="translate(292,822)">
+        <rect width="386" height="42" rx="9" fill="#12202e" stroke="#ff9900"/>
+        <text x="193" y="27" text-anchor="middle" class="tname" style="fill:#ffd9a6">Browser — APS Viewer + Gen-AI chat</text>
+      </g>
+
+      <!-- ===== flow arrows (center spine) ===== -->
+      <line x1="500" y1="124" x2="500" y2="226" stroke="#ff9900" stroke-width="2" marker-end="url(#arw)"/>
+      <line x1="500" y1="276" x2="500" y2="372" stroke="#ff9900" stroke-width="2" marker-end="url(#arw)"/>
+      <text x="510" y="308" class="flow">line protocol → 8086</text>
+      <line x1="500" y1="424" x2="500" y2="510" stroke="#ff9900" stroke-width="2" marker-end="url(#arw)"/>
+      <text x="510" y="460" class="flow">Flux query</text>
+      <line x1="610" y1="560" x2="610" y2="636" stroke="#ff9900" stroke-width="2" marker-end="url(#arw)"/>
+      <text x="620" y="592" class="flow">invoke agent</text>
+      <line x1="480" y1="662" x2="392" y2="662" stroke="#4a5a6e" stroke-width="2" marker-end="url(#arw)"/>
+      <line x1="500" y1="560" x2="500" y2="785" stroke="#4a5a6e" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#arw)"/>
+      <text x="508" y="726" class="flow">answers + telemetry → viewer</text>
+    </svg>
+  </div>
+  <p class="cap">Left-to-top-to-bottom flow: edge sensors → AWS IoT Core → Amazon Timestream for InfluxDB (in a Multi-AZ VPC)
+  → query API → a Bedrock AgentCore agent → the APS viewer + chat in the browser.</p>
+
+  <h2>How the data flows</h2>
+  <ol>
+    <li><b>Edge:</b> plant sensors / PLCs publish telemetry (temperature, humidity, vibration) via <b>Telegraf</b> using InfluxDB <b>line protocol</b>.</li>
+    <li><b>Ingest:</b> <b>AWS IoT Core</b> receives MQTT messages; an <b>IoT Rule</b> routes them to a writer.</li>
+    <li><b>Store:</b> an <b>AWS Lambda</b> writer batches points (5,000 lines/request, gzip) into <b>Amazon Timestream for InfluxDB</b> — a managed InfluxDB 2.x engine in a Multi-AZ VPC, listening on port <code>8086</code>.</li>
+    <li><b>Serve:</b> a query <b>Lambda</b> runs <b>Flux</b> queries and exposes them through <b>Amazon API Gateway</b>.</li>
+    <li><b>Intelligence:</b> a <b>Bedrock AgentCore</b> agent (Strands + tools) reads the telemetry through that API and reasons with <b>Amazon Bedrock (Claude)</b> to answer natural-language questions.</li>
+    <li><b>Present:</b> the <b>APS Viewer</b> renders the model (translated by APS Model Derivative), overlays live sensor sprites/heatmaps, and hosts the Gen-AI chat. Served via <b>CloudFront + S3</b>, secured with <b>Amazon Cognito</b>.</li>
+  </ol>
+
+  <h2>Why Amazon Timestream for InfluxDB</h2>
+  <div class="grid">
+    <div class="card"><h3>Open-source APIs</h3><p>Managed InfluxDB 2.x — existing Telegraf, client libraries, Flux/InfluxQL, and dashboards work unchanged.</p></div>
+    <div class="card"><h3>Real-time performance</h3><p>Single-digit-millisecond queries over high-cardinality time series — ideal for a live plant-floor twin.</p></div>
+    <div class="card"><h3>Managed &amp; durable</h3><p>Automated backups, version upgrades, and Multi-AZ replication; <code>db.influx</code> instance classes, up to 16 TiB.</p></div>
+    <div class="card"><h3>Pay for use</h3><p>Billed per instance-hour + storage + data transfer — no upfront investment.</p></div>
+  </div>
+
+  <footer>
+    Reference architecture for the AU 2026 booth demo · Autodesk Platform Services on AWS ·
+    Source: <a href="https://docs.aws.amazon.com/timestream/latest/developerguide/timestream-for-influxdb.html">Amazon Timestream for InfluxDB developer guide</a>
+  </footer>
+</div>
+</body>
+</html>

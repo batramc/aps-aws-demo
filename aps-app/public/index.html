@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>APS on AWS -- AU 2026 Demo</title>
+
+    <!-- REAL Autodesk Viewer v7 SDK -->
+    <link
+      rel="stylesheet"
+      href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css"
+      type="text/css"
+    />
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
+
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="creds-banner" class="banner hidden">
+      No APS credentials configured. Copy
+      <code>.env.example</code> to <code>.env</code>, add your
+      <code>APS_CLIENT_ID</code> / <code>APS_CLIENT_SECRET</code> from
+      <a href="https://aps.autodesk.com" target="_blank" rel="noopener">aps.autodesk.com</a>,
+      then restart the server.
+    </div>
+
+    <header id="topbar">
+      <span class="logo">APS<span class="accent">&nbsp;on AWS</span></span>
+      <span class="subtitle">Autodesk Platform Services -- AU 2026 Demo</span>
+    </header>
+
+    <div id="layout">
+      <aside id="sidebar">
+        <div class="upload">
+          <label class="upload-label" for="model-file">Upload a model</label>
+          <input
+            id="model-file"
+            type="file"
+            accept=".stl,.step,.stp,.dwg,.rvt,.ipt"
+          />
+          <button id="upload-btn">Upload &amp; Translate</button>
+          <div id="upload-status" class="status"></div>
+        </div>
+        <h2>Models</h2>
+        <ul id="model-list"></ul>
+      </aside>
+
+      <main id="viewer-wrap">
+        <div id="viewer"></div>
+      </main>
+    </div>
+
+    <script src="./main.js"></script>
+  </body>
+</html>

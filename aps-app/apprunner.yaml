@@ -1,0 +1,29 @@
+# App Runner SOURCE-based config (the no-Docker path).
+# Put this file at the repo root and point an App Runner service at the GitHub repo.
+# App Runner builds and runs it for you with a managed Node runtime.
+#
+# Use this OR the Docker/ECR path in deploy/deploy-apprunner.sh — not both.
+version: 1.0
+runtime: nodejs18
+build:
+  commands:
+    build:
+      - npm ci --omit=dev
+run:
+  runtime-version: 18
+  command: node server.js
+  network:
+    port: 8080
+  env:
+    - name: PORT
+      value: "8080"
+    - name: APS_BUCKET
+      value: "aps-aws-demo-au2026"
+  # APS_CLIENT_ID / APS_CLIENT_SECRET are injected as *secrets* from AWS Secrets
+  # Manager in the App Runner service config (console or the deploy script), so
+  # they never live in source control.
+  secrets:
+    - name: APS_CLIENT_ID
+      value-from: "arn:aws:secretsmanager:REGION:ACCOUNT:secret:aps-aws-demo/creds:APS_CLIENT_ID::"
+    - name: APS_CLIENT_SECRET
+      value-from: "arn:aws:secretsmanager:REGION:ACCOUNT:secret:aps-aws-demo/creds:APS_CLIENT_SECRET::"

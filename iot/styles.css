@@ -1,0 +1,111 @@
+:root{
+  --aws:#ff9900; --panel:#141b26; --panel2:#1c2634; --line:#2a3646;
+  --text:#e8edf4; --muted:#9fb0c3; --green:#3fb950; --amber:#e3a008; --red:#f0503a; --blue:#4aa3ff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#0b1017;color:var(--text);
+  height:100vh;overflow:hidden;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;
+  background:linear-gradient(90deg,#0b1017,#131c2b);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700}
+.logo-adsk{color:#fff}.plus{color:var(--muted)}.logo-aws{color:var(--aws);font-size:20px;font-weight:800}
+.brand-sub{margin-left:12px;font-size:13px;color:var(--muted);font-weight:500;border-left:1px solid var(--line);padding-left:12px}
+.level-tag{font-size:12px;color:var(--aws);border:1px solid var(--aws);padding:6px 12px;border-radius:8px;font-weight:600}
+
+.layout{flex:1;display:grid;grid-template-columns:1fr 380px;min-height:0}
+.twin-pane{position:relative;background:radial-gradient(800px 500px at 50% 35%,#1a2740 0%,#080c13 75%);border-right:1px solid var(--line)}
+#twin{position:absolute;inset:0}
+#sensor-tags{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.tag{position:absolute;transform:translate(-50%,-120%);background:rgba(10,15,24,.85);border:1px solid var(--line);
+  border-radius:8px;padding:4px 8px;font-size:11px;font-weight:600;white-space:nowrap;backdrop-filter:blur(4px);
+  display:flex;align-items:center;gap:6px;transition:opacity .2s}
+.tag .dot{width:8px;height:8px;border-radius:50%}
+.tag.sel{border-color:var(--aws);box-shadow:0 0 0 2px rgba(255,153,0,.3)}
+.tag b{color:#fff}.tag small{color:var(--muted);font-weight:500}
+
+.twin-controls{position:absolute;top:14px;right:14px;display:flex;flex-direction:column;gap:8px}
+.mini-btn{background:rgba(10,15,24,.8);color:var(--muted);border:1px solid var(--line);padding:7px 12px;
+  border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;backdrop-filter:blur(6px)}
+.mini-btn:hover{color:#fff}.mini-btn.active{color:var(--aws);border-color:var(--aws)}
+
+.legend{position:absolute;top:14px;left:14px;background:rgba(10,15,24,.8);border:1px solid var(--line);
+  border-radius:10px;padding:10px 12px;backdrop-filter:blur(6px);width:190px}
+.lg-title{font-size:11px;color:var(--muted);font-weight:600}
+.lg-bar{height:10px;border-radius:5px;margin:7px 0 4px;background:linear-gradient(90deg,#3b6fe0,#3fb950,#e3a008,#f0503a)}
+.lg-scale{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
+
+.timebar{position:absolute;left:16px;right:16px;bottom:16px;display:flex;align-items:center;gap:12px;
+  background:rgba(10,15,24,.82);border:1px solid var(--line);border-radius:12px;padding:10px 16px;backdrop-filter:blur(6px)}
+.play-btn{background:var(--aws);color:#1b1200;border:none;width:34px;height:34px;border-radius:50%;font-size:14px;cursor:pointer;flex-shrink:0}
+#time-slider{flex:1;accent-color:var(--aws)}
+.time-label{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;min-width:52px;text-align:center}
+.time-sub{font-size:11px;color:var(--muted)}
+
+.dash{overflow-y:auto;padding:18px 18px 8px;display:flex;flex-direction:column;gap:14px}
+.dash::-webkit-scrollbar{width:7px}.dash::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px}
+.kpi-n{font-size:20px;font-weight:800;color:var(--aws)}.kpi-l{font-size:10.5px;color:var(--muted);margin-top:2px}
+
+.sel-head{display:flex;align-items:center;justify-content:space-between;margin-top:2px}
+#sel-name{font-size:18px;font-weight:700}
+.pill{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--panel2);color:var(--muted)}
+.pill.ok{background:rgba(63,185,80,.18);color:var(--green)}
+.pill.warn{background:rgba(227,160,8,.18);color:var(--amber)}
+.pill.alarm{background:rgba(240,80,58,.2);color:var(--red)}
+.readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ro{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.ro span{font-size:20px;font-weight:800;color:#fff}.ro small{display:block;font-size:10px;color:var(--muted);margin-top:2px}
+.chart-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;height:180px}
+h4{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.chart-card canvas{max-height:130px}
+
+.alarms ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.alarms li{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--red);border-radius:8px;
+  padding:8px 10px;font-size:13px;display:flex;justify-content:space-between}
+.alarms li.none{border-left-color:var(--line);color:var(--muted);justify-content:flex-start}
+.alarms li b{color:var(--red)}.alarms li .zt{color:var(--muted);font-weight:500}
+
+.pipeline{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:2px}
+.pipe{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.pipe .node{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:5px 8px;font-size:11px;font-weight:600}
+.pipe .node.aws{border-color:var(--aws);color:var(--aws)}
+.pipe i{color:var(--muted);font-style:normal}
+.pipe-note{font-size:11.5px;color:var(--muted);line-height:1.5}
+
+.footer{display:flex;justify-content:space-between;padding:7px 22px;font-size:11px;color:var(--muted);border-top:1px solid var(--line);background:#0b1017}
+.disc{opacity:.7}
+@media (max-width:1050px){.layout{grid-template-columns:1fr}}
+
+/* ---------- Gen AI chat dock ---------- */
+.chat-dock{position:absolute;right:16px;bottom:78px;width:340px;z-index:20}
+.chat-toggle{display:none;background:var(--aws);color:#1b1200;border:none;padding:10px 16px;border-radius:999px;
+  font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 6px 18px rgba(255,153,0,.35)}
+.chat-dock.collapsed .chat-toggle{display:block;position:absolute;right:0;bottom:0}
+.chat-dock.collapsed .chat-panel{display:none}
+.chat-panel{background:rgba(12,18,28,.94);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  box-shadow:0 12px 34px rgba(0,0,0,.5);backdrop-filter:blur(8px);display:flex;flex-direction:column;max-height:440px}
+.chat-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(90deg,#131c2b,#1c2634);
+  border-bottom:1px solid var(--line);font-weight:700;font-size:14px}
+.chat-src{margin-left:auto;font-size:10px;font-weight:700;color:var(--aws);border:1px solid var(--aws);
+  padding:2px 7px;border-radius:999px}
+.chat-head #chat-min{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;padding:0 4px}
+.chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:150px}
+.chat-msgs::-webkit-scrollbar{width:6px}.chat-msgs::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+.msg{max-width:88%;padding:8px 11px;border-radius:12px;font-size:13px;line-height:1.4}
+.msg.user{align-self:flex-end;background:var(--aws);color:#1b1200;border-bottom-right-radius:4px;font-weight:600}
+.msg.bot{align-self:flex-start;background:var(--panel2);color:var(--text);border-bottom-left-radius:4px}
+.src-tag{display:inline-block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;
+  margin-right:6px;padding:1px 6px;border-radius:999px}
+.src-tag.agentcore{background:rgba(255,153,0,.2);color:var(--aws)}
+.src-tag.bedrock{background:rgba(74,163,255,.2);color:var(--blue)}
+.src-tag.offline{background:rgba(159,176,195,.18);color:var(--muted)}
+.chat-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 8px}
+.chat-chips button{background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:999px;
+  padding:5px 10px;font-size:11px;cursor:pointer}
+.chat-chips button:hover{color:#fff;border-color:var(--aws)}
+.chat-input{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--line)}
+.chat-input input{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:8px;color:var(--text);
+  padding:8px 10px;font-size:13px;outline:none}
+.chat-input input:focus{border-color:var(--aws)}
+.chat-input button{background:var(--aws);color:#1b1200;border:none;border-radius:8px;padding:0 14px;font-weight:700;cursor:pointer}

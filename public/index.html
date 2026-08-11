@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Autodesk Platform Services on AWS — AU 2026 Demo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ===================== TOP BAR ===================== -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-adsk">AUTODESK</span>
+      <span class="plus">+</span>
+      <span class="logo-aws">aws</span>
+      <span class="brand-sub">Platform Services on AWS</span>
+    </div>
+    <nav class="persona-switch" aria-label="Persona selector">
+      <button class="persona-btn active" data-persona="story">🎤 Booth Story</button>
+      <button class="persona-btn" data-persona="developer">👩‍💻 Developer</button>
+      <button class="persona-btn" data-persona="analyst">📊 Business Analyst</button>
+    </nav>
+    <div class="event-tag">Autodesk University 2026</div>
+  </header>
+
+  <!-- ===================== MAIN LAYOUT ===================== -->
+  <main class="layout">
+    <!-- LEFT: live 3D viewer -->
+    <section class="viewer-pane">
+      <div id="viewer"></div>
+      <div class="viewer-badge">
+        <span class="live-dot"></span> Live in browser — no CAD software
+      </div>
+      <div class="viewer-controls">
+        <button id="btn-rotate" class="mini-btn active">⟳ Auto-rotate</button>
+        <button id="btn-wire" class="mini-btn">◫ Wireframe</button>
+        <button id="btn-replay" class="mini-btn">▶ Replay pipeline</button>
+      </div>
+      <div class="model-meta">
+        <div><strong>Model:</strong> planetary-gear-assembly.step</div>
+        <div><strong>Format:</strong> ISO-10303-21 → SVF2 (web)</div>
+        <div><strong>Streamed from:</strong> AWS (S3 + CloudFront)</div>
+      </div>
+    </section>
+
+    <!-- RIGHT: persona-driven context -->
+    <section class="context-pane">
+
+      <!-- ---------- STORY PERSONA ---------- -->
+      <div class="persona-panel" data-panel="story">
+        <h1>A real engineering model, running live in a browser.</h1>
+        <p class="lede">
+          It started as a raw CAD design file. It was uploaded to <b>Autodesk Platform
+          Services</b>, stored in the cloud, translated to a lightweight web format, and
+          streamed right here — on a laptop, a phone, anywhere.
+        </p>
+        <p class="lede">
+          Durable storage, compute that scales on demand, and global low-latency delivery —
+          all on <b>AWS</b>. That's the foundation Autodesk uses to serve
+          <b>millions of designs</b> worldwide.
+        </p>
+
+        <h3>The pipeline behind this view</h3>
+        <ol class="pipeline" id="pipeline">
+          <li data-step="0"><span class="dot"></span><b>Upload</b><small>.stl / .step design file</small></li>
+          <li data-step="1"><span class="dot"></span><b>Authenticate</b><small>APS OAuth 2.0 token</small></li>
+          <li data-step="2"><span class="dot"></span><b>Object Storage (OSS)</b><small>durable cloud bucket → S3</small></li>
+          <li data-step="3"><span class="dot"></span><b>Model Derivative</b><small>translate to SVF2 web format</small></li>
+          <li data-step="4"><span class="dot"></span><b>Stream to viewer</b><small>CloudFront global delivery</small></li>
+        </ol>
+
+        <div class="value-row">
+          <div class="value-chip">♻️ Scale-to-zero storage</div>
+          <div class="value-chip">🌍 Low-latency worldwide</div>
+          <div class="value-chip">🔒 Secure by default</div>
+        </div>
+      </div>
+
+      <!-- ---------- DEVELOPER PERSONA ---------- -->
+      <div class="persona-panel hidden" data-panel="developer">
+        <h1>Ship the APS app to AWS — in plain English.</h1>
+        <p class="lede">
+          A developer describes the infrastructure they want. <b>Kiro</b> (Amazon's agentic
+          IDE, powered by Bedrock/Claude) generates the infrastructure-as-code and deploys it.
+          No hand-written YAML.
+        </p>
+
+        <div class="terminal" id="kiro-term" aria-label="Kiro deployment terminal">
+          <div class="term-bar"><span></span><span></span><span></span> kiro — deploy</div>
+          <pre id="kiro-out"></pre>
+        </div>
+
+        <h3>What gets deployed</h3>
+        <div class="arch" id="arch-dev">
+          <div class="arch-box user">Browser<small>APS Viewer SDK</small></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box">CloudFront<small>global CDN + TLS</small></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box auth">Cognito<small>user sign-in</small></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box compute">ECS Fargate<small>APS Node.js app</small></div>
+          <div class="arch-side">
+            <div class="arch-box store">S3<small>model files + pre-signed URLs</small></div>
+            <div class="arch-box aps">Autodesk APS APIs<small>OSS + Model Derivative</small></div>
+          </div>
+        </div>
+        <p class="foot">
+          Replaces local files with <b>S3 signed URLs</b> and direct API keys with
+          <b>Cognito</b> — the same code, now cloud-native and secure.
+        </p>
+      </div>
+
+      <!-- ---------- ANALYST PERSONA ---------- -->
+      <div class="persona-panel hidden" data-panel="analyst">
+        <h1>Turn design activity into business insight.</h1>
+        <p class="lede">
+          The same platform feeds <b>Amazon QuickSight</b> — so a business analyst can see
+          usage, cost, and even <b>sustainability</b> impact, without touching CAD.
+        </p>
+
+        <div class="kpi-row">
+          <div class="kpi"><div class="kpi-n">12,480</div><div class="kpi-l">Models translated</div></div>
+          <div class="kpi"><div class="kpi-n">38s</div><div class="kpi-l">Avg translate time</div></div>
+          <div class="kpi"><div class="kpi-n">2.4 TB</div><div class="kpi-l">Design storage (S3)</div></div>
+          <div class="kpi"><div class="kpi-n">$1,860</div><div class="kpi-l">Est. monthly AWS cost</div></div>
+        </div>
+
+        <div class="charts">
+          <div class="chart-card"><h4>Translations / week</h4><canvas id="c-bar"></canvas></div>
+          <div class="chart-card"><h4>Storage by region</h4><canvas id="c-doughnut"></canvas></div>
+          <div class="chart-card wide"><h4>AWS cost trend</h4><canvas id="c-line"></canvas></div>
+        </div>
+
+        <div class="sustain">
+          <div class="sustain-head">🌱 Sustainability (Autodesk Sustainability API → MCP → QuickSight)</div>
+          <div class="sustain-body">
+            <div class="sustain-kpi"><div class="kpi-n green">42.3</div><div class="kpi-l">tCO₂e embodied carbon</div></div>
+            <canvas id="c-carbon"></canvas>
+          </div>
+          <p class="foot">
+            An <b>MCP server</b> exposes Autodesk's sustainability data to Bedrock/QuickSight —
+            carbon footprint of materials and designs, answerable in natural language.
+          </p>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Demo scaffold for AU 2026 · APS + AWS · 100–200 level</span>
+    <span class="disclaimer">3D render is a local Three.js stand-in for the APS-streamed model; metrics are illustrative.</span>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

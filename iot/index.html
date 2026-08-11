@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APS Digital Twin on AWS — IoT Sensor Overlay (AU 2026)</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-adsk">AUTODESK</span><span class="plus">+</span><span class="logo-aws">aws</span>
+      <span class="brand-sub">Digital Twin — IoT sensor overlay on the model</span>
+    </div>
+    <div class="level-tag">L200–L300 · Manufacturing / Plant Floor</div>
+  </header>
+
+  <main class="layout">
+    <!-- 3D twin -->
+    <section class="twin-pane">
+      <div id="twin"></div>
+      <div id="sensor-tags"></div><!-- HTML sensor tags projected over the 3D scene -->
+
+      <div class="twin-controls">
+        <button id="btn-heatmap" class="mini-btn active">🌡 Heatmap</button>
+        <button id="btn-sprites" class="mini-btn active">📍 Sensors</button>
+        <button id="btn-reset" class="mini-btn">⟲ Reset view</button>
+      </div>
+
+      <div class="legend">
+        <span class="lg-title">Zone temperature</span>
+        <div class="lg-bar"></div>
+        <div class="lg-scale"><span>18°C</span><span>50°C</span><span>85°C</span></div>
+      </div>
+
+      <!-- Time scrubber -->
+      <div class="timebar">
+        <button id="btn-play" class="play-btn">▶</button>
+        <input type="range" id="time-slider" min="0" max="287" value="180" />
+        <span id="time-label" class="time-label">15:00</span>
+        <span class="time-sub">last 24h · 5-min resolution</span>
+      </div>
+
+      <!-- Gen AI chat over the twin (Bedrock AgentCore) -->
+      <div id="chat-dock" class="chat-dock collapsed">
+        <button id="chat-toggle" class="chat-toggle">🤖 Ask the twin</button>
+        <div class="chat-panel">
+          <div class="chat-head">
+            <span>Ask the twin</span>
+            <span id="chat-src" class="chat-src">AgentCore</span>
+            <button id="chat-min" title="minimize">–</button>
+          </div>
+          <div id="chat-msgs" class="chat-msgs"></div>
+          <div class="chat-chips">
+            <button>Why is Welding in alarm?</button>
+            <button>Which zone is hottest?</button>
+            <button>Summarize the floor</button>
+          </div>
+          <div class="chat-input">
+            <input id="chat-in" placeholder="Ask about the digital twin…" autocomplete="off" />
+            <button id="chat-send" title="send">➤</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- side dashboard -->
+    <aside class="dash">
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-n" id="kpi-alarms">0</div><div class="kpi-l">Active alarms</div></div>
+        <div class="kpi"><div class="kpi-n" id="kpi-avg">–</div><div class="kpi-l">Avg floor temp</div></div>
+        <div class="kpi"><div class="kpi-n" id="kpi-peak">–</div><div class="kpi-l">Hottest zone</div></div>
+      </div>
+
+      <div class="sel-head">
+        <span id="sel-name">Welding Bay</span>
+        <span id="sel-status" class="pill">—</span>
+      </div>
+      <div class="readouts">
+        <div class="ro"><span id="ro-temp">–</span><small>Temp °C</small></div>
+        <div class="ro"><span id="ro-hum">–</span><small>Humidity %</small></div>
+        <div class="ro"><span id="ro-vib">–</span><small>Vibration mm/s</small></div>
+      </div>
+      <div class="chart-card">
+        <h4>Temperature — 24h</h4>
+        <canvas id="chart"></canvas>
+      </div>
+
+      <div class="alarms">
+        <h4>Alarms at this time</h4>
+        <ul id="alarm-list"><li class="none">No active alarms</li></ul>
+      </div>
+
+      <div class="pipeline">
+        <h4>Where the data comes from — on AWS</h4>
+        <div class="pipe">
+          <span class="node">Sensors</span><i>›</i>
+          <span class="node aws">AWS IoT Core</span><i>›</i>
+          <span class="node aws">Timestream for InfluxDB</span><i>›</i>
+          <span class="node aws">API GW + Lambda</span><i>›</i>
+          <span class="node">APS Viewer</span>
+        </div>
+        <p class="pipe-note">Same DataViz overlay you'd get from the APS IoT Extensions sample — here the sensor
+        feed is simulated; in production it streams from AWS IoT Core, is stored in Amazon Timestream for InfluxDB, and served
+        to the viewer through API Gateway + Lambda.</p>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <span>Digital-twin scaffold for AU 2026 · mirrors the APS Data Visualization (IoT) Extension</span>
+    <span class="disc">3D scene + sensor data are simulated stand-ins; swap the data adapter for AWS IoT/Timestream to go live.</span>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+  <script src="chat.js"></script>
+</body>
+</html>

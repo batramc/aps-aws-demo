@@ -1,0 +1,4 @@
+# AgentCore Runtime installs ONLY these required dependencies (not optional extras),
+# so strands-agents and bedrock-agentcore must live here to import in the container.
+bedrock-agentcore
+strands-agents
