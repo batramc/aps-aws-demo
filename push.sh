@@ -12,10 +12,14 @@ echo "── staged files (verify NO node_modules/ or .env below) ──"
 git status --short
 git commit -m "APS digital twin on AWS — AU 2026 demo" || echo "(nothing new to commit)"
 
-# 2. create the GitHub repo and push
-if command -v gh >/dev/null 2>&1; then
+# 2. push — reuse existing remote if present, else create the repo
+if git remote get-url origin >/dev/null 2>&1; then
+  git push -u origin "$(git branch --show-current)"
+  echo "✅ Pushed to $(git remote get-url origin)"
+  echo "   Enable Pages: Settings → Pages → main → /docs"
+elif command -v gh >/dev/null 2>&1; then
   gh repo create "$REPO" --public --source=. --remote=origin --push
-  echo "✅ Pushed. Now enable Pages: Settings → Pages → main → /docs"
+  echo "✅ Created and pushed. Now enable Pages: Settings → Pages → main → /docs"
 else
   echo ""
   echo "GitHub CLI (gh) not found. Create an EMPTY repo named '$REPO' on github.com, then run:"

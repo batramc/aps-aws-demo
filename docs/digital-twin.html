@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>APS Digital Twin on AWS — Shop Floor Assistant</title>
+<style>
+  :root{--aws:#ff9900;--bg:#0d1117;--panel:#161b22;--line:#30363d;--text:#e6edf3;--muted:#8b949e}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+  .wrap{max-width:1060px;margin:0 auto;padding:40px 24px 60px}
+  header{border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:28px}
+  .eyebrow{color:var(--aws);font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase}
+  h1{font-size:32px;margin:6px 0 8px}
+  .sub{color:var(--muted);font-size:17px;max-width:780px}
+  h2{font-size:20px;margin:34px 0 12px;border-left:3px solid var(--aws);padding-left:10px}
+  h3{font-size:15px;margin:0 0 6px;color:#fff}
+  p{color:#c9d1d9;margin-bottom:12px}
+  .arch{background:#0b1017;border:1px solid var(--line);border-radius:12px;padding:16px;margin:10px 0 8px;text-align:center}
+  .arch img{max-width:100%;height:auto;border-radius:8px}
+  .cap{color:var(--muted);font-size:13px;margin-bottom:20px}
+  ol,ul{margin:0 0 14px 22px;color:#c9d1d9}
+  li{margin-bottom:7px}
+  code{background:#161b22;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:13px;color:#ffd9a6}
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:6px 0 8px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .card p{font-size:14px;color:var(--muted);margin:0}
+  .steps{counter-reset:s;list-style:none;margin-left:0}
+  .steps li{position:relative;padding-left:40px;margin-bottom:14px}
+  .steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:0;width:26px;height:26px;
+    background:var(--aws);color:#1b1200;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+  .steps b{color:#fff}
+  .callout{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--aws);border-radius:10px;padding:14px;margin:10px 0}
+  footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:13px}
+  a{color:var(--aws)}
+  .back{display:inline-block;margin-bottom:18px;font-size:13px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">‹ Back to architecture overview</a>
+  <header>
+    <div class="eyebrow">Autodesk University 2026 · Solution Overview</div>
+    <h1>APS Digital Twin on AWS — Shop Floor Assistant</h1>
+    <p class="sub">A plant-floor digital twin that overlays live IoT telemetry on an Autodesk Platform Services
+    model, stores it in <b>Amazon Timestream for InfluxDB</b>, and lets operators ask questions in plain language
+    through an <b>Amazon Bedrock AgentCore</b> agent grounded in the live data.</p>
+  </header>
+
+  <h2>The problem</h2>
+  <p>Manufacturers run capital-intensive lines where a single hour of unplanned downtime is expensive — yet the
+  people who could prevent it are working blind:</p>
+  <div class="grid">
+    <div class="card"><h3>Unplanned downtime</h3><p>Faults are noticed after they cascade, not as they emerge. Mean-time-to-detect is dominated by humans reading dashboards.</p></div>
+    <div class="card"><h3>Siloed OT / IT data</h3><p>Sensor historians, the CAD/BIM model, and maintenance records live in separate systems that never talk to each other.</p></div>
+    <div class="card"><h3>No spatial context</h3><p>A tag named <code>TT-1147</code> means nothing on the floor. Operators can't see <em>where</em> a reading is or what equipment it belongs to.</p></div>
+  </div>
+
+  <h2>The solution</h2>
+  <p>Bind live telemetry to the 3D model so every reading has a place and a piece of equipment behind it, then put a
+  Gen-AI assistant on top so an operator can ask <em>“why is Welding Bay in alarm?”</em> and get a grounded answer plus
+  the matching fix procedure — without leaving the model.</p>
+
+  <h2>Architecture</h2>
+  <div class="arch">
+    <img src="shop-floor-architecture.png" alt="APS digital twin on AWS — shop floor architecture, showing the AgentCore layer, Strands agent, MCP tools, IoT Core to Timestream for InfluxDB telemetry path, and the APS Viewer." />
+  </div>
+  <p class="cap">Edge sensors → AWS IoT Core → Data Simulation Lambda → Amazon Timestream for InfluxDB → API Gateway
+  → Bedrock AgentCore (Strands agent + MCP tools) → APS Viewer + Gen-AI chat.</p>
+
+  <h2>End-to-end flow</h2>
+  <ol class="steps">
+    <li><b>Ingest</b> — plant sensors and PLCs publish temperature, humidity, and vibration to <b>AWS IoT Core</b> over MQTT.</li>
+    <li><b>Simulate / write</b> — a <b>Data Simulation Lambda</b> writes points into <b>Amazon Timestream for InfluxDB</b> — managed InfluxDB 2.x in a Multi-AZ VPC on port <code>8086</code>.</li>
+    <li><b>Serve</b> — a query <b>Lambda</b> behind <b>Amazon API Gateway</b> runs Flux queries and exposes the telemetry as a REST API.</li>
+    <li><b>Reason</b> — an <b>Amazon Bedrock AgentCore</b> agent (Strands + MCP tools) reads that telemetry and reasons over it with <b>Amazon Bedrock (Claude)</b>.</li>
+    <li><b>Present</b> — the <b>APS Viewer</b> renders the model, overlays the live sensor sprites and heatmap via the Data Visualization (IoT) Extension, and hosts the Gen-AI chat.</li>
+  </ol>
+
+  <h2>3–5 minute walkthrough</h2>
+  <p>The demo ships with a scripted <b>guided tour</b> (the <b>▶ Start guided demo</b> button). Run it as follows:</p>
+  <ol class="steps">
+    <li><b>Sensors on the floor</b> (~30s) — “Every zone carries IoT sensors. These tags are live readings, overlaid exactly where the equipment sits.” Point at the floating tags.</li>
+    <li><b>The data pipeline on AWS</b> (~30s) — the pipeline strip lights up in sequence. “Readings flow edge → IoT Core → Timestream for InfluxDB → API Gateway → AgentCore → back to the APS Viewer.”</li>
+    <li><b>An incident emerges</b> (~45s) — the timeline jumps to 15:50, the Welding Bay crosses 80 °C, the heatmap turns red and the camera flies to the zone. “Detection is instant and spatial.”</li>
+    <li><b>Ask the twin</b> (~45s) — the Diagnosis tab opens and auto-asks <em>“Why is Welding Bay in alarm?”</em>. AgentCore answers grounded in the live snapshot — no dashboard digging.</li>
+    <li><b>Root cause + equipment</b> (~45s) — the Equipment tab shows the Fronius TPS 500i weld station: firmware, install date, last service, MTBF. “Context the operator never had.”</li>
+    <li><b>Recommended action</b> (~45s) — the SOPs tab pulls the matching fix procedure from the knowledge base; applying it resolves the alarm.</li>
+  </ol>
+  <p>To improvise, use <b>⚡ Trigger incident</b> to live-ramp any zone from warning to alarm over ~15 seconds, and the
+  time slider to scrub the last 24 hours.</p>
+
+  <div class="callout">
+    <p style="margin:0"><b>Honest note:</b> in this demo the 3D scene and telemetry are simulated stand-ins — a Three.js
+    plant floor and locally generated sensor data — so the booth demo is credential-free and reliable. In production,
+    swap in the real <b>APS Viewer + Data Visualization (IoT) Extension</b> and a data adapter reading from
+    <b>API Gateway → Timestream for InfluxDB</b>. The AgentCore chat path is already real: set the runtime ARN and it
+    calls your deployed agent.</p>
+  </div>
+
+  <h2>Why Amazon Timestream for InfluxDB</h2>
+  <div class="grid">
+    <div class="card"><h3>Open-source APIs</h3><p>Managed InfluxDB 2.x — Telegraf, client libraries, Flux/InfluxQL, and dashboards work unchanged.</p></div>
+    <div class="card"><h3>Real-time performance</h3><p>Single-digit-millisecond queries over high-cardinality time series — ideal for a live plant-floor twin.</p></div>
+    <div class="card"><h3>Managed &amp; durable</h3><p>Automated backups, upgrades, and Multi-AZ replication; <code>db.influx</code> instance classes.</p></div>
+  </div>
+
+  <footer>
+    Solution overview for the AU 2026 booth demo · Autodesk Platform Services on AWS ·
+    See the <a href="index.html">reference architecture</a> and the
+    <a href="https://docs.aws.amazon.com/timestream/latest/developerguide/timestream-for-influxdb.html">Amazon Timestream for InfluxDB developer guide</a>.
+  </footer>
+</div>
+</body>
+</html>

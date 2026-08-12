@@ -3,17 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>APS Digital Twin on AWS — IoT Sensor Overlay (AU 2026)</title>
+  <title>APS Digital Twin on AWS — Shop Floor Assistant (AU 2026)</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="logo-adsk">AUTODESK</span><span class="plus">+</span><span class="logo-aws">aws</span>
-      <span class="brand-sub">Digital Twin — IoT sensor overlay on the model</span>
+      <span class="brand-sub">Shop Floor Assistant — digital twin + AgentCore</span>
     </div>
-    <div class="level-tag">L200–L300 · Manufacturing / Plant Floor</div>
+    <div class="top-actions">
+      <button id="btn-tour" class="tour-btn">▶ Start guided demo</button>
+      <div class="level-tag">L200–L300 · Manufacturing / Plant Floor</div>
+    </div>
   </header>
+
+  <!-- Always-on animated end-to-end data pipeline strip -->
+  <div id="pipeline-strip" class="pipeline-strip" aria-label="End-to-end data flow">
+    <div class="ps-node" data-stage="0"><span class="ps-ico">📡</span><span class="ps-lbl">Sensors</span></div>
+    <span class="ps-arrow">›</span>
+    <div class="ps-node aws" data-stage="1"><span class="ps-ico">☁️</span><span class="ps-lbl">AWS IoT Core</span></div>
+    <span class="ps-arrow">›</span>
+    <div class="ps-node aws" data-stage="2"><span class="ps-ico">🗄️</span><span class="ps-lbl">Timestream for InfluxDB</span></div>
+    <span class="ps-arrow">›</span>
+    <div class="ps-node aws" data-stage="3"><span class="ps-ico">🔌</span><span class="ps-lbl">API Gateway</span></div>
+    <span class="ps-arrow">›</span>
+    <div class="ps-node aws" data-stage="4"><span class="ps-ico">🤖</span><span class="ps-lbl">Bedrock AgentCore</span></div>
+    <span class="ps-arrow">›</span>
+    <div class="ps-node" data-stage="5"><span class="ps-ico">🧊</span><span class="ps-lbl">APS Viewer</span></div>
+  </div>
 
   <main class="layout">
     <!-- 3D twin -->
@@ -22,6 +40,7 @@
       <div id="sensor-tags"></div><!-- HTML sensor tags projected over the 3D scene -->
 
       <div class="twin-controls">
+        <button id="btn-incident" class="mini-btn danger">⚡ Trigger incident</button>
         <button id="btn-heatmap" class="mini-btn active">🌡 Heatmap</button>
         <button id="btn-sprites" class="mini-btn active">📍 Sensors</button>
         <button id="btn-reset" class="mini-btn">⟲ Reset view</button>
@@ -41,68 +60,101 @@
         <span class="time-sub">last 24h · 5-min resolution</span>
       </div>
 
-      <!-- Gen AI chat over the twin (Bedrock AgentCore) -->
-      <div id="chat-dock" class="chat-dock collapsed">
-        <button id="chat-toggle" class="chat-toggle">🤖 Ask the twin</button>
-        <div class="chat-panel">
-          <div class="chat-head">
-            <span>Ask the twin</span>
-            <span id="chat-src" class="chat-src">AgentCore</span>
-            <button id="chat-min" title="minimize">–</button>
-          </div>
-          <div id="chat-msgs" class="chat-msgs"></div>
-          <div class="chat-chips">
-            <button>Why is Welding in alarm?</button>
-            <button>Which zone is hottest?</button>
-            <button>Summarize the floor</button>
-          </div>
-          <div class="chat-input">
-            <input id="chat-in" placeholder="Ask about the digital twin…" autocomplete="off" />
-            <button id="chat-send" title="send">➤</button>
+      <!-- Guided-tour narration overlay -->
+      <div id="tour-overlay" class="tour-overlay" hidden>
+        <div class="tour-card">
+          <div class="tour-step">Step <span id="tour-n">1</span> of <span id="tour-total">6</span></div>
+          <h3 id="tour-title">—</h3>
+          <p id="tour-text">—</p>
+          <div class="tour-actions">
+            <button id="tour-exit" class="tour-x">Exit</button>
+            <div class="tour-nav">
+              <button id="tour-back" class="tour-nav-btn">‹ Back</button>
+              <button id="tour-next" class="tour-nav-btn primary">Next ›</button>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- side dashboard -->
+    <!-- side dashboard: layered tabs -->
     <aside class="dash">
-      <div class="kpi-row">
-        <div class="kpi"><div class="kpi-n" id="kpi-alarms">0</div><div class="kpi-l">Active alarms</div></div>
-        <div class="kpi"><div class="kpi-n" id="kpi-avg">–</div><div class="kpi-l">Avg floor temp</div></div>
-        <div class="kpi"><div class="kpi-n" id="kpi-peak">–</div><div class="kpi-l">Hottest zone</div></div>
+      <div class="tabbar" id="tabbar">
+        <button class="tab active" data-tab="overview">Overview</button>
+        <button class="tab" data-tab="sensors">Sensors</button>
+        <button class="tab" data-tab="equipment">Equipment</button>
+        <button class="tab" data-tab="diagnosis">Diagnosis</button>
+        <button class="tab" data-tab="sops">SOPs</button>
       </div>
 
-      <div class="sel-head">
-        <span id="sel-name">Welding Bay</span>
-        <span id="sel-status" class="pill">—</span>
-      </div>
-      <div class="readouts">
-        <div class="ro"><span id="ro-temp">–</span><small>Temp °C</small></div>
-        <div class="ro"><span id="ro-hum">–</span><small>Humidity %</small></div>
-        <div class="ro"><span id="ro-vib">–</span><small>Vibration mm/s</small></div>
-      </div>
-      <div class="chart-card">
-        <h4>Temperature — 24h</h4>
-        <canvas id="chart"></canvas>
-      </div>
+      <div class="tabpanes">
+        <!-- OVERVIEW -->
+        <div class="pane active" id="pane-overview">
+          <div class="kpi-row">
+            <div class="kpi"><div class="kpi-n" id="kpi-alarms">0</div><div class="kpi-l">Active alarms</div></div>
+            <div class="kpi"><div class="kpi-n" id="kpi-avg">–</div><div class="kpi-l">Avg floor temp</div></div>
+            <div class="kpi"><div class="kpi-n" id="kpi-peak">–</div><div class="kpi-l">Hottest zone</div></div>
+          </div>
 
-      <div class="alarms">
-        <h4>Alarms at this time</h4>
-        <ul id="alarm-list"><li class="none">No active alarms</li></ul>
-      </div>
+          <div class="sel-head">
+            <span id="sel-name">Welding Bay</span>
+            <span id="sel-status" class="pill">—</span>
+          </div>
+          <div class="readouts">
+            <div class="ro"><span id="ro-temp">–</span><small>Temp °C</small></div>
+            <div class="ro"><span id="ro-hum">–</span><small>Humidity %</small></div>
+            <div class="ro"><span id="ro-vib">–</span><small>Vibration mm/s</small></div>
+          </div>
 
-      <div class="pipeline">
-        <h4>Where the data comes from — on AWS</h4>
-        <div class="pipe">
-          <span class="node">Sensors</span><i>›</i>
-          <span class="node aws">AWS IoT Core</span><i>›</i>
-          <span class="node aws">Timestream for InfluxDB</span><i>›</i>
-          <span class="node aws">API GW + Lambda</span><i>›</i>
-          <span class="node">APS Viewer</span>
+          <div class="alarms">
+            <h4>Alarms at this time</h4>
+            <ul id="alarm-list"><li class="none">No active alarms</li></ul>
+          </div>
         </div>
-        <p class="pipe-note">Same DataViz overlay you'd get from the APS IoT Extensions sample — here the sensor
-        feed is simulated; in production it streams from AWS IoT Core, is stored in Amazon Timestream for InfluxDB, and served
-        to the viewer through API Gateway + Lambda.</p>
+
+        <!-- SENSORS -->
+        <div class="pane" id="pane-sensors">
+          <div class="chart-card">
+            <h4>Temperature — 24h · <span id="chart-zone">Welding Bay</span></h4>
+            <canvas id="chart"></canvas>
+          </div>
+          <p class="pane-note">Live 5-minute telemetry for the selected zone. Scrub the timeline under the 3D
+          view to move through the last 24 hours; the marker tracks the current time.</p>
+        </div>
+
+        <!-- EQUIPMENT (NEW) -->
+        <div class="pane" id="pane-equipment">
+          <div id="equip-card"></div>
+          <p class="pane-note">Asset metadata for the selected zone — the kind of record an APS/Tandem model
+          element carries. In production this comes from the model's property database.</p>
+        </div>
+
+        <!-- DIAGNOSIS (AgentCore chat, moved here) -->
+        <div class="pane" id="pane-diagnosis">
+          <div class="chat-embed">
+            <div class="chat-head">
+              <span>Ask the twin</span>
+              <span id="chat-src" class="chat-src">AgentCore</span>
+            </div>
+            <div id="chat-msgs" class="chat-msgs"></div>
+            <div class="chat-chips">
+              <button>Why is Welding Bay in alarm?</button>
+              <button>Which zone is hottest?</button>
+              <button>Summarize the floor</button>
+            </div>
+            <div class="chat-input">
+              <input id="chat-in" placeholder="Ask about the digital twin…" autocomplete="off" />
+              <button id="chat-send" title="send">➤</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SOPs (NEW) -->
+        <div class="pane" id="pane-sops">
+          <div id="sop-card"></div>
+          <p class="pane-note">Fix procedure retrieved from the operations knowledge base for the selected
+          zone's current fault. In production this is a Bedrock Knowledge Base grounded on your SOP library.</p>
+        </div>
       </div>
     </aside>
   </main>

@@ -109,3 +109,94 @@ h4{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;text-tran
   padding:8px 10px;font-size:13px;outline:none}
 .chat-input input:focus{border-color:var(--aws)}
 .chat-input button{background:var(--aws);color:#1b1200;border:none;border-radius:8px;padding:0 14px;font-weight:700;cursor:pointer}
+
+/* ============================================================
+   ENHANCEMENTS — pipeline strip, guided tour, tabs, equipment,
+   SOPs, incident button, embedded chat (AU 2026)
+   ============================================================ */
+
+/* --- top bar actions + guided-demo button --- */
+.top-actions{display:flex;align-items:center;gap:14px}
+.tour-btn{background:var(--aws);color:#1b1200;border:none;padding:9px 16px;border-radius:9px;
+  font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(255,153,0,.3)}
+.tour-btn:hover{filter:brightness(1.07)}
+
+/* --- animated pipeline strip --- */
+.pipeline-strip{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;
+  padding:9px 18px;background:linear-gradient(90deg,#0b1017,#131c2b);border-bottom:1px solid var(--line)}
+.ps-node{display:flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line);
+  border-radius:9px;padding:6px 11px;font-size:12px;font-weight:600;color:var(--muted);
+  transition:all .35s ease;position:relative}
+.ps-node.aws{border-color:rgba(255,153,0,.35)}
+.ps-node .ps-ico{font-size:14px;filter:grayscale(.3)}
+.ps-node.flow{color:#fff;border-color:var(--aws);box-shadow:0 0 0 2px rgba(255,153,0,.18),0 0 16px rgba(255,153,0,.25);
+  transform:translateY(-1px)}
+.ps-node.flow .ps-ico{filter:none}
+.ps-arrow{color:var(--muted);font-size:16px;font-style:normal}
+.pipeline-strip.tour-active{background:linear-gradient(90deg,#151f10,#241a06)}
+.pipeline-strip.tour-active .ps-node{border-color:var(--aws)}
+.pipeline-strip.tour-active .ps-node.flow{box-shadow:0 0 0 3px rgba(255,153,0,.3),0 0 26px rgba(255,153,0,.5);
+  transform:translateY(-2px) scale(1.04)}
+
+/* --- incident button + alarm tag pulse --- */
+.mini-btn.danger{color:#ffb3a8;border-color:rgba(240,80,58,.5)}
+.mini-btn.danger:hover{color:#fff;background:rgba(240,80,58,.18);border-color:var(--red)}
+.tag.alarm{border-color:var(--red);box-shadow:0 0 0 2px rgba(240,80,58,.35);animation:tagpulse 1.1s ease-in-out infinite}
+@keyframes tagpulse{0%,100%{box-shadow:0 0 0 2px rgba(240,80,58,.35)}50%{box-shadow:0 0 0 5px rgba(240,80,58,.12)}}
+
+/* --- guided-tour overlay --- */
+.tour-overlay{position:absolute;left:16px;right:16px;bottom:78px;z-index:40;display:flex;justify-content:center;pointer-events:none}
+.tour-overlay[hidden]{display:none}
+.tour-card{pointer-events:auto;max-width:560px;width:100%;background:rgba(12,18,28,.97);border:1px solid var(--aws);
+  border-radius:14px;padding:16px 18px;box-shadow:0 16px 44px rgba(0,0,0,.6)}
+.tour-step{font-size:11px;font-weight:700;color:var(--aws);letter-spacing:.6px;text-transform:uppercase;margin-bottom:4px}
+.tour-card h3{font-size:17px;margin:0 0 6px;color:#fff}
+.tour-card p{font-size:13.5px;color:var(--muted);line-height:1.55;margin:0 0 14px}
+.tour-actions{display:flex;align-items:center;justify-content:space-between}
+.tour-x{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer}
+.tour-x:hover{color:#fff;border-color:var(--muted)}
+.tour-nav{display:flex;gap:8px}
+.tour-nav-btn{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.tour-nav-btn:hover:not(:disabled){border-color:var(--aws)}
+.tour-nav-btn:disabled{opacity:.4;cursor:not-allowed}
+.tour-nav-btn.primary{background:var(--aws);color:#1b1200;border-color:var(--aws)}
+.tour-hl{outline:2px solid var(--aws)!important;outline-offset:2px;border-radius:10px;
+  box-shadow:0 0 0 4px rgba(255,153,0,.14)!important;transition:box-shadow .3s}
+
+/* --- tabbed right panel --- */
+.dash{padding:0;gap:0}
+.tabbar{position:sticky;top:0;z-index:5;display:flex;gap:2px;padding:10px 12px 0;background:#0b1017;border-bottom:1px solid var(--line)}
+.tab{flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);
+  padding:9px 4px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.tab:hover{color:#fff}
+.tab.active{color:var(--aws);border-bottom-color:var(--aws)}
+.tabpanes{flex:1}
+.pane{display:none;flex-direction:column;gap:14px;padding:16px}
+.pane.active{display:flex}
+.pane-note{font-size:11.5px;color:var(--muted);line-height:1.5;margin:0}
+
+/* --- equipment card --- */
+.equip-title{display:flex;align-items:center;justify-content:space-between;font-size:17px;margin-bottom:2px}
+.equip-model{font-size:14px;font-weight:700;color:#fff}
+.equip-spec{font-size:12px;color:var(--muted);margin-bottom:6px}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.meta{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px}
+.meta small{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.meta span{font-size:14px;font-weight:700;color:#fff}
+
+/* --- SOP card --- */
+.sop-title{font-size:15px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sop-id{background:rgba(255,153,0,.16);color:var(--aws);font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px}
+.sop-kb{margin-left:auto;font-size:10px;color:var(--muted);border:1px solid var(--line);padding:2px 7px;border-radius:999px}
+.sop-cause{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--aws);border-radius:8px;
+  padding:10px 12px;font-size:13px;color:#c9d1d9;line-height:1.5}
+.sop-cause b{color:#fff}
+.sop-steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:7px}
+.sop-steps li{font-size:13px;color:#c9d1d9;line-height:1.45}
+
+/* --- embedded chat (Diagnosis tab) --- */
+.chat-embed{display:flex;flex-direction:column;height:100%;min-height:420px;background:rgba(12,18,28,.6);
+  border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.chat-embed .chat-head{display:flex;align-items:center;gap:8px;padding:10px 14px;
+  background:linear-gradient(90deg,#131c2b,#1c2634);border-bottom:1px solid var(--line);font-weight:700;font-size:14px}
+.chat-embed .chat-msgs{flex:1}
